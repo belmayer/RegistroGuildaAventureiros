@@ -13,7 +13,11 @@ import java.time.OffsetDateTime;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 class UsuarioRepositoryTest {
 

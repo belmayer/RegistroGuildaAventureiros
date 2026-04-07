@@ -8,7 +8,7 @@ import lombok.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "aventureiros", schema = "aventura")
+@Table(name = "aventureiro", schema = "operacoes")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,21 +20,22 @@ public class Aventureiro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔗 Organização (audit)
+    // 🔗 Organização
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizacao_id", nullable = false)
     private Organizacao organizacao;
 
-    // 🔗 Usuário (audit)
+    // 🔗 Usuário (CORRIGIDO)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "usuario_cadastro_id", nullable = false)
     private Usuario usuario;
 
     @Column(nullable = false, length = 120)
     private String nome;
 
+    // ⚠️ IMPORTANTE: precisa bater com o banco (STRING)
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private ClasseAventureiro classe;
 
     @Column(nullable = false)
@@ -43,9 +44,11 @@ public class Aventureiro {
     @Column(nullable = false)
     private Boolean ativo;
 
-    @Column(name = "created_at", nullable = false)
+    // ✅ CORRIGIDO
+    @Column(name = "data_criacao")
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    // ✅ CORRIGIDO
+    @Column(name = "data_atualizacao")
     private OffsetDateTime updatedAt;
 }

@@ -2,13 +2,17 @@ package com.example.guilda.service;
 
 import com.example.guilda.domain.aventura.Aventureiro;
 import com.example.guilda.domain.aventura.ClasseAventureiro;
+import com.example.guilda.dto.aventura.CompanheiroDTO;
 import com.example.guilda.repository.aventura.AventureiroRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import com.example.guilda.dto.aventura.AventureiroDTO;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 
@@ -66,7 +70,10 @@ public class AventureiroService {
 
     public Aventureiro buscarPorId(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Aventureiro não encontrado"
+                ));
     }
 
     public void inativar(Long id) {
@@ -81,13 +88,107 @@ public class AventureiroService {
         repository.save(a);
     }
 
-    public Page<Aventureiro> listar(Boolean ativo, ClasseAventureiro classe, Integer nivelMin, int page, int size) {
+    private AventureiroDTO toDTO(Aventureiro a) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        CompanheiroDTO companheiroDTO = null;
 
+        if (a.getCompanheiro() != null) {
+            companheiroDTO = CompanheiroDTO.builder()
+                    .nome(a.getCompanheiro().getNome())
+                    .especie(a.getCompanheiro().getEspecie())
+                    .lealdade(a.getCompanheiro().getLealdade())
+                    .build();
+        }
 
-        return repository.findByAtivoAndClasseAndNivelGreaterThanEqual(
-                ativo, classe, nivelMin == null ? 0 : nivelMin, pageable
-        );
+        return AventureiroDTO.builder()
+                .id(a.getId())
+                .nome(a.getNome())
+                .classe(a.getClasse().name())
+                .nivel(a.getNivel())
+                .ativo(a.getAtivo())
+                .organizacaoNome(a.getOrganizacao().getNome())
+                .companheiro(companheiroDTO) // 🔥 AQUI
+                .build();
     }
+
+    public AventureiroDTO buscarDTO(Long id) {
+        Aventureiro a = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Aventureiro não encontrado"
+                ));
+
+        return toDTO(a);
+    }
+
+    public AventureiroDTO atualizarDTO(Long id, Aventureiro dados) {
+
+        Aventureiro existente = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Aventureiro não encontrado"
+                ));
+
+        existente.setNome(dados.getNome());
+        existente.setClasse(dados.getClasse());
+        existente.setNivel(dados.getNivel());
+        existente.setUpdatedAt(OffsetDateTime.now());
+
+        Aventureiro salvo = repository.save(existente);
+
+        return toDTO(salvo);
+    }
+
+    public Page<AventureiroDTO> listar(Boolean ativo, ClasseAventureiro classe, Integer nivelMin, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
+
+        // nenhum filtro
+        if (ativo == null && classe == null && nivelMin == null) {
+            return repository.findAll(pageable)
+                    .map(this::toDTO);
+        }
+
+        // só ativo
+        if (ativo != null && classe == null && nivelMin == null) {
+            return repository.findByAtivo(ativo, pageable)
+                    .map(this::toDTO);
+        }
+
+        // só classe
+        if (ativo == null && classe != null && nivelMin == null) {
+            return repository.findByClasse(classe, pageable)
+                    .map(this::toDTO);
+        }
+
+        // só nível
+        if (ativo == null && classe == null && nivelMin != null) {
+            return repository.findByNivelGreaterThanEqual(nivelMin, pageable)
+                    .map(this::toDTO);
+        }
+
+        // ativo + classe
+        if (ativo != null && classe != null && nivelMin == null) {
+            return repository.findByAtivoAndClasse(ativo, classe, pageable)
+                    .map(this::toDTO);
+        }
+
+        // ativo + nível
+        if (ativo != null && classe == null && nivelMin != null) {
+            return repository.findByAtivoAndNivelGreaterThanEqual(ativo, nivelMin, pageable)
+                    .map(this::toDTO);
+        }
+
+        // classe + nível
+        if (ativo == null && classe != null && nivelMin != null) {
+            return repository.findByClasseAndNivelGreaterThanEqual(classe, nivelMin, pageable)
+                    .map(this::toDTO);
+        }
+
+        // todos filtros
+        return repository.findByAtivoAndClasseAndNivelGreaterThanEqual(
+                ativo, classe, nivelMin, pageable)
+                .map(this::toDTO);
+    }
+
 }

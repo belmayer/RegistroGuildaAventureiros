@@ -4,5 +4,6 @@ public enum ClasseAventureiro {
     GUERREIRO,
     MAGO,
     ARQUEIRO,
-    LADINO
+    LADINO,
+    CLERIGO
 }

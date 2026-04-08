@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "companheiros", schema = "aventura")
+@Table(name = "companheiro", schema = "operacoes")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,20 +13,22 @@ import lombok.*;
 public class Companheiro {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "aventureiro_id")
     private Long id;
 
-    // 🔗 1:1 com aventureiro
+    // 🔗 1:1 com aventureiro (compartilha o ID)
     @OneToOne
-    @JoinColumn(name = "aventureiro_id", nullable = false, unique = true)
+    @MapsId
+    @JoinColumn(name = "aventureiro_id")
     private Aventureiro aventureiro;
 
     @Column(nullable = false, length = 120)
     private String nome;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String especie;
+    private Especie especie;
 
-    @Column(nullable = false)
-    private Integer lealdade; // 0 a 100
+    @Column(name = "indice_lealdade", nullable = false)
+    private Integer lealdade;
 }

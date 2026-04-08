@@ -21,6 +21,36 @@ public interface AventureiroRepository extends JpaRepository<Aventureiro, Long> 
             Pageable pageable
     );
 
+    // 🔹 só ativo
+    Page<Aventureiro> findByAtivo(Boolean ativo, Pageable pageable);
+
+    // 🔹 só classe
+    Page<Aventureiro> findByClasse(ClasseAventureiro classe, Pageable pageable);
+
+    // 🔹 só nível mínimo
+    Page<Aventureiro> findByNivelGreaterThanEqual(Integer nivel, Pageable pageable);
+
+    // 🔹 ativo + classe
+    Page<Aventureiro> findByAtivoAndClasse(
+            Boolean ativo,
+            ClasseAventureiro classe,
+            Pageable pageable
+    );
+
+    // 🔹 ativo + nível
+    Page<Aventureiro> findByAtivoAndNivelGreaterThanEqual(
+            Boolean ativo,
+            Integer nivel,
+            Pageable pageable
+    );
+
+    // 🔹 classe + nível
+    Page<Aventureiro> findByClasseAndNivelGreaterThanEqual(
+            ClasseAventureiro classe,
+            Integer nivel,
+            Pageable pageable
+    );
+
     // 🔹 BUSCA POR NOME
     Page<Aventureiro> findByNomeContainingIgnoreCase(
             String nome,

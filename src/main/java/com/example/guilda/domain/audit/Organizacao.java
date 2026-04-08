@@ -1,8 +1,9 @@
 package com.example.guilda.domain.audit;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
@@ -34,9 +35,11 @@ public class Organizacao {
 
     // 🔹 1:N com Usuario
     @OneToMany(mappedBy = "organizacao", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private Set<Usuario> usuarios;
 
     // 🔹 1:N com Role
     @OneToMany(mappedBy = "organizacao", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Role> roles;
 }

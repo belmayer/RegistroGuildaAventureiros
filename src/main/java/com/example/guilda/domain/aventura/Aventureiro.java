@@ -20,12 +20,10 @@ public class Aventureiro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔗 Organização
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizacao_id", nullable = false)
     private Organizacao organizacao;
 
-    // 🔗 Usuário (CORRIGIDO)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_cadastro_id", nullable = false)
     private Usuario usuario;
@@ -33,7 +31,6 @@ public class Aventureiro {
     @Column(nullable = false, length = 120)
     private String nome;
 
-    // ⚠️ IMPORTANTE: precisa bater com o banco (STRING)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private ClasseAventureiro classe;
@@ -44,11 +41,13 @@ public class Aventureiro {
     @Column(nullable = false)
     private Boolean ativo;
 
-    // ✅ CORRIGIDO
     @Column(name = "data_criacao")
     private OffsetDateTime createdAt;
 
-    // ✅ CORRIGIDO
     @Column(name = "data_atualizacao")
     private OffsetDateTime updatedAt;
+
+    // 🔥 ESSENCIAL PARA COMPANHEIRO
+    @OneToOne(mappedBy = "aventureiro", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Companheiro companheiro;
 }

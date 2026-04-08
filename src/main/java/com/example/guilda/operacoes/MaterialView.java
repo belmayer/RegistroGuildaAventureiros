@@ -1,12 +1,16 @@
 package com.example.guilda.operacoes;
 
+import com.example.guilda.domain.aventura.NivelPerigo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Immutable;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "mv_painel_tatico_missao", schema = "operacoes")
+@Immutable
+@Table(name = "vw_painel_tatico_missao", schema = "operacoes")
 @Getter
 @Setter
 public class MaterialView {
@@ -21,8 +25,9 @@ public class MaterialView {
     @Column(name = "status")
     private String status;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "nivel_perigo")
-    private Integer nivelPerigo;
+    private NivelPerigo nivelPerigo;
 
     @Column(name = "organizacao_id")
     private Long organizacaoId;

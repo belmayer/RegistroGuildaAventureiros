@@ -1,7 +1,8 @@
 package com.example.guilda.domain.audit;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
@@ -59,9 +60,9 @@ public class Usuario {
     // organizacao
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizacao_id", nullable = false)
+    @JsonBackReference //acaba com o loop infinito no postman
     private Organizacao organizacao;
 
-    // role
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
@@ -69,5 +70,6 @@ public class Usuario {
             joinColumns = @JoinColumn(name = "usuario_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+    @JsonIgnore
     private Set<Role> roles;
 }

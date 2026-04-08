@@ -2,11 +2,15 @@ package com.example.guilda.controller;
 
 import com.example.guilda.domain.aventura.Aventureiro;
 import com.example.guilda.domain.aventura.ClasseAventureiro;
+import com.example.guilda.dto.aventura.AventureiroDTO;
 import com.example.guilda.service.AventureiroService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/aventureiro")
@@ -16,19 +20,46 @@ public class AventureiroController {
     private final AventureiroService service;
 
     @GetMapping("/{id}")
-    public Aventureiro buscar(@PathVariable Long id) {
-        return service.buscarPorId(id);
+    public AventureiroDTO buscar(@PathVariable Long id) {
+        return service.buscarDTO(id);
     }
 
+    // 🔹 Listar com filtros + paginação + headers
     @GetMapping
-    public Page<Aventureiro> listar(
+    public ResponseEntity<Page<AventureiroDTO>> listar(
             @RequestParam(required = false) Boolean ativo,
             @RequestParam(required = false) ClasseAventureiro classe,
             @RequestParam(required = false) Integer nivelMin,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return service.listar(ativo, classe, nivelMin, page, size);
+
+        if (page < 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "page não pode ser negativo"
+            );
+        }
+
+        if (size < 1 || size > 50) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "size deve estar entre 1 e 50"
+            );
+        }
+
+        Page<AventureiroDTO> pageResult = service.listar(ativo, classe, nivelMin, page, size);
+
+        // ✅ headers obrigatórios
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Total-Count", String.valueOf(pageResult.getTotalElements()));
+        headers.add("X-Page", String.valueOf(pageResult.getNumber()));
+        headers.add("X-Size", String.valueOf(pageResult.getSize()));
+        headers.add("X-Total-Pages", String.valueOf(pageResult.getTotalPages()));
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pageResult);
     }
 
     @PatchMapping("/{id}/inativar")
@@ -50,8 +81,8 @@ public class AventureiroController {
 
     // 🔹 Atualizar aventureiro
     @PutMapping("/{id}")
-    public Aventureiro atualizar(@PathVariable Long id,
-                                 @RequestBody Aventureiro aventureiro) {
-        return service.atualizar(id, aventureiro);
+    public AventureiroDTO atualizar(@PathVariable Long id,
+                                    @RequestBody Aventureiro aventureiro) {
+        return service.atualizarDTO(id, aventureiro);
     }
 }

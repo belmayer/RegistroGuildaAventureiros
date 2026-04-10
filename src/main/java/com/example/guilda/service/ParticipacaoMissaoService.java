@@ -1,13 +1,17 @@
 package com.example.guilda.service;
 
-import com.example.guilda.domain.aventura.ParticipacaoMissao;
+import com.example.guilda.domain.aventura.*;
+import com.example.guilda.dto.aventura.RankingDTO;
 import com.example.guilda.repository.aventura.ParticipacaoMissaoRepository;
 import com.example.guilda.repository.aventura.AventureiroRepository;
 import com.example.guilda.repository.aventura.MissaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,57 +21,96 @@ public class ParticipacaoMissaoService {
     private final AventureiroRepository aventureiroRepository;
     private final MissaoRepository missaoRepository;
 
+    @Transactional
     public ParticipacaoMissao criar(ParticipacaoMissao participacao) {
 
-        // 🔥 buscar entidades completas no banco
+        // 🔴 valida entrada básica
+        if (participacao.getAventureiro() == null || participacao.getAventureiro().getId() == null) {
+            throw new IllegalArgumentException("Aventureiro é obrigatório");
+        }
+
+        if (participacao.getMissao() == null || participacao.getMissao().getId() == null) {
+            throw new IllegalArgumentException("Missão é obrigatória");
+        }
+
+        // 🔴 buscar entidades reais
         var aventureiro = aventureiroRepository.findById(
                 participacao.getAventureiro().getId()
-        ).orElseThrow(() -> new RuntimeException("Aventureiro não encontrado"));
+        ).orElseThrow(() -> new IllegalArgumentException("Aventureiro não encontrado"));
 
         var missao = missaoRepository.findById(
                 participacao.getMissao().getId()
-        ).orElseThrow(() -> new RuntimeException("Missão não encontrada"));
+        ).orElseThrow(() -> new IllegalArgumentException("Missão não encontrada"));
 
-        // 🔥 substituir no objeto
         participacao.setAventureiro(aventureiro);
         participacao.setMissao(missao);
 
-        // 🔥 não pode duplicar
-        boolean exists = repository.existsByMissaoIdAndAventureiroId(
-                missao.getId(),
-                aventureiro.getId()
+        // 🔥 CORREÇÃO CRÍTICA: setar ID composto
+        participacao.setId(
+                new ParticipacaoMissaoID(
+                        missao.getId(),
+                        aventureiro.getId()
+                )
         );
 
-        if (exists) {
-            throw new RuntimeException("Aventureiro já está nessa missão");
+        // 🔴 não duplicar participação
+        if (repository.existsByMissaoIdAndAventureiroId(
+                missao.getId(), aventureiro.getId())) {
+
+            throw new IllegalArgumentException("Aventureiro já está nessa missão");
         }
 
-        // 🔥 ativo
+        // 🔴 aventureiro ativo
         if (!Boolean.TRUE.equals(aventureiro.getAtivo())) {
-            throw new RuntimeException("Aventureiro inativo não pode participar");
+            throw new IllegalArgumentException("Aventureiro inativo não pode participar");
         }
 
-        // 🔥 mesma organização
+        // 🔴 mesma organização
         if (!missao.getOrganizacao().getId()
                 .equals(aventureiro.getOrganizacao().getId())) {
 
-            throw new RuntimeException("Organizações diferentes");
+            throw new IllegalArgumentException("Aventureiro e missão devem ser da mesma organização");
         }
 
-        // 🔥 (opcional mas recomendado) validar status da missão
-        /*
-        if (missao.getStatus() != StatusMissao.PLANEJADA) {
-            throw new RuntimeException("Missão não aceita participantes");
-        }
-        */
+        // 🔴 status da missão
+        if (missao.getStatus() == StatusMissao.CANCELADA ||
+            missao.getStatus() == StatusMissao.CONCLUIDA) {
 
-        // 🔥 recompensa válida
-        if (participacao.getRecompensa() != null && participacao.getRecompensa() < 0) {
-            throw new RuntimeException("Recompensa inválida");
+            throw new IllegalArgumentException("Missão não aceita participantes");
         }
 
+        // 🔴 papel obrigatório
+        if (participacao.getPapel() == null || participacao.getPapel().isBlank()) {
+            throw new IllegalArgumentException("Papel é obrigatório");
+        }
+
+        // 🔴 destaque obrigatório
+        if (participacao.getDestaque() == null) {
+            throw new IllegalArgumentException("Destaque deve ser informado");
+        }
+
+        // 🔴 recompensa válida
+        if (participacao.getRecompensa() != null &&
+            participacao.getRecompensa().compareTo(BigDecimal.ZERO) < 0) {
+
+            throw new IllegalArgumentException("Recompensa não pode ser negativa");
+        }
+
+        // 🔥 agora você controla o timestamp aqui
         participacao.setCreatedAt(OffsetDateTime.now());
 
         return repository.save(participacao);
+    }
+
+    public List<ParticipacaoMissao> buscarPorMissao(Long missaoId) {
+        return repository.buscarPorMissao(missaoId);
+    }
+
+    public List<RankingDTO> ranking(
+            OffsetDateTime inicio,
+            OffsetDateTime fim,
+            StatusMissao status
+    ) {
+        return repository.ranking(inicio, fim, status);
     }
 }

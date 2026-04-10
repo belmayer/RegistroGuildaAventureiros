@@ -1,54 +1,47 @@
 package com.example.guilda.repository.aventura;
 
-import com.example.guilda.domain.aventura.Missao;
 import com.example.guilda.domain.aventura.ParticipacaoMissao;
+import com.example.guilda.domain.aventura.ParticipacaoMissaoID;
+import com.example.guilda.domain.aventura.StatusMissao;
 import com.example.guilda.dto.aventura.RankingDTO;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 
-public interface ParticipacaoMissaoRepository extends JpaRepository<ParticipacaoMissao, Long> {
+public interface ParticipacaoMissaoRepository extends JpaRepository<ParticipacaoMissao, ParticipacaoMissaoID> {
 
-    // 🔹 EVITAR DUPLICIDADE
+    // 🔹 EVITAR DUPLICIDADE (forma mais segura)
     boolean existsByMissaoIdAndAventureiroId(Long missaoId, Long aventureiroId);
 
-    // 🔹 CONTAR PARTICIPAÇÕES
+    // 🔥 PARTICIPANTES DA MISSÃO
     @Query("""
-        SELECT COUNT(p)
-        FROM ParticipacaoMissao p
-        WHERE p.aventureiro.id = :id
+    SELECT p FROM ParticipacaoMissao p
+    JOIN FETCH p.aventureiro
+    WHERE p.missao.id = :missaoId
     """)
-    Long contarParticipacoes(@Param("id") Long id);
+    List<ParticipacaoMissao> buscarPorMissao(@Param("missaoId") Long id);
 
-    // 🔹 ÚLTIMA MISSÃO (usa Pageable pra pegar só 1)
-    @Query("""
-        SELECT p.missao
-        FROM ParticipacaoMissao p
-        WHERE p.aventureiro.id = :id
-        ORDER BY p.createdAt DESC
-    """)
-    List<Missao> ultimaMissao(@Param("id") Long id, Pageable pageable);
-
-    // 🔥 RANKING CORRIGIDO
+    // 🔥 RANKING
     @Query("""
     SELECT new com.example.guilda.dto.aventura.RankingDTO(
         p.aventureiro.id,
         p.aventureiro.nome,
         COUNT(p),
-        CAST(COALESCE(SUM(p.recompensa), 0) AS long),
-        SUM(CASE WHEN p.destaque = true THEN 1L ELSE 0L END)
+        SUM(p.recompensa),
+        SUM(CASE WHEN p.destaque = true THEN 1 ELSE 0 END)
     )
     FROM ParticipacaoMissao p
-    WHERE (:inicio IS NULL OR p.createdAt >= :inicio)
-    AND (:fim IS NULL OR p.createdAt <= :fim)
+    WHERE (CAST(:inicio AS timestamp) IS NULL OR p.createdAt >= :inicio)
+    AND (CAST(:fim AS timestamp) IS NULL OR p.createdAt <= :fim)
+    AND (:status IS NULL OR p.missao.status = :status)
     GROUP BY p.aventureiro.id, p.aventureiro.nome
     ORDER BY COUNT(p) DESC
 """)
     List<RankingDTO> ranking(
             @Param("inicio") OffsetDateTime inicio,
-            @Param("fim") OffsetDateTime fim
+            @Param("fim") OffsetDateTime fim,
+            @Param("status") StatusMissao status
     );
 }

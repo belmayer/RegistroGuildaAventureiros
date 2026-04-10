@@ -3,16 +3,11 @@ package com.example.guilda.domain.aventura;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(
-        name = "participacoes",
-        schema = "aventura",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"missao_id", "aventureiro_id"})
-        }
-)
+@Table(name = "participacao_missao", schema = "operacoes")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,28 +15,32 @@ import java.time.OffsetDateTime;
 @Builder
 public class ParticipacaoMissao {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private ParticipacaoMissaoID id;
 
     // 🔗 Missão
-    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("missaoId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "missao_id", nullable = false)
     private Missao missao;
 
     // 🔗 Aventureiro
-    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("aventureiroId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "aventureiro_id", nullable = false)
     private Aventureiro aventureiro;
 
     @Column(nullable = false)
     private String papel;
 
-    private Integer recompensa; // >= 0
+    @Column(name = "recompensa_ouro")
+    private BigDecimal recompensa;
 
     @Column(nullable = false)
     private Boolean destaque;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "data_registro", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
+
+
 }

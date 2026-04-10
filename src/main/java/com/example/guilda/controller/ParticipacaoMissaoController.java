@@ -1,12 +1,13 @@
 package com.example.guilda.controller;
 
-import com.example.guilda.domain.aventura.Missao;
 import com.example.guilda.domain.aventura.ParticipacaoMissao;
+import com.example.guilda.domain.aventura.StatusMissao;
+import com.example.guilda.dto.aventura.ParticipacaoResponse;
 import com.example.guilda.dto.aventura.RankingDTO;
 import com.example.guilda.service.ParticipacaoMissaoService;
 import com.example.guilda.repository.aventura.ParticipacaoMissaoRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
@@ -18,35 +19,40 @@ import java.util.List;
 public class ParticipacaoMissaoController {
 
     private final ParticipacaoMissaoService service;
-    private final ParticipacaoMissaoRepository repository;
 
-    // 🔹 Criar participação
+    // criar
     @PostMapping
-    public ParticipacaoMissao criar(@RequestBody ParticipacaoMissao participacao) {
-        return service.criar(participacao);
+    public ParticipacaoResponse criar(@RequestBody ParticipacaoMissao participacao) {
+        return new ParticipacaoResponse(service.criar(participacao));
     }
 
-    // 🔹 Contar participações de um aventureiro
-    @GetMapping("/aventureiro/{id}/total")
-    public Long totalParticipacoes(@PathVariable Long id) {
-        return repository.contarParticipacoes(id);
-    }
-
-    // 🔹 Última missão do aventureiro
-    @GetMapping("/aventureiro/{id}/ultima-missao")
-    public Missao ultimaMissao(@PathVariable Long id) {
-        return repository.ultimaMissao(id, PageRequest.of(0, 1))
+    // llistar participantes de missao
+    @GetMapping("/missao/{missaoId}")
+    public List<ParticipacaoResponse> participantes(@PathVariable Long missaoId) {
+        return service.buscarPorMissao(missaoId)
                 .stream()
-                .findFirst()
-                .orElse(null);
+                .map(ParticipacaoResponse::new)
+                .toList();
     }
 
-    // 🔥 Ranking
     @GetMapping("/ranking")
     public List<RankingDTO> ranking(
-            @RequestParam(required = false) OffsetDateTime inicio,
-            @RequestParam(required = false) OffsetDateTime fim
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            OffsetDateTime inicio,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            OffsetDateTime fim,
+
+            @RequestParam(required = false)
+            StatusMissao status
     ) {
-        return repository.ranking(inicio, fim);
+
+        if (inicio != null && fim != null && inicio.isAfter(fim)) {
+            throw new IllegalArgumentException("Data início não pode ser maior que data fim");
+        }
+
+        return service.ranking(inicio, fim, status);
     }
 }

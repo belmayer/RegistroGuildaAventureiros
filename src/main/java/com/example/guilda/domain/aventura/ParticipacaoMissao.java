@@ -18,13 +18,13 @@ public class ParticipacaoMissao {
     @EmbeddedId
     private ParticipacaoMissaoID id;
 
-    // 🔗 Missão
+    // missao
     @MapsId("missaoId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "missao_id", nullable = false)
     private Missao missao;
 
-    // 🔗 Aventureiro
+    // aventureiro
     @MapsId("aventureiroId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "aventureiro_id", nullable = false)

@@ -13,6 +13,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class ParticipacaoMissaoID implements Serializable {
 
+    //id composyo
     private Long missaoId;
     private Long aventureiroId;
 }

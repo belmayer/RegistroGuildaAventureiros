@@ -19,56 +19,50 @@ public class AuditEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔗 ORGANIZAÇÃO (obrigatório)
+    // organizacao
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizacao_id", nullable = false)
     private Organizacao organizacao;
 
-    // 🔗 USUÁRIO (opcional)
+    // usuario
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "actor_user_id")
     private Usuario actorUser;
 
-    // 🔗 API KEY (opcional)
+    // apikey
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "actor_api_key_id")
     private ApiKey actorApiKey;
 
-    // 📌 AÇÃO realizada (ex: CREATE_USER)
     @Column(nullable = false)
     private String action;
 
-    // 📌 Schema da entidade afetada
+    // schema da entidade
     @Column(name = "entity_schema")
     private String entitySchema;
 
-    // 📌 Nome da entidade (ex: usuarios)
     @Column(name = "entity_name")
     private String entityName;
 
-    // 📌 ID da entidade afetada (string pq pode variar)
+    // ID da entidade
     @Column(name = "entity_id")
     private String entityId;
 
-    // 📌 Momento da ação
+    // mometo da acao
     @Column(name = "occurred_at", nullable = false)
     private OffsetDateTime occurredAt;
 
-    // 🌐 IP (INET no banco → String no Java)
     private String ip;
 
-    // 🌐 Navegador / cliente
     @Column(name = "user_agent")
     private String userAgent;
 
-    // 🔄 Diferenças (antes/depois)
+    // antes/depois
     @Column(columnDefinition = "jsonb")
     private String diff;
 
-    // 🧾 Dados extras
     @Column(columnDefinition = "jsonb")
     private String metadata;
 
-    // ✅ Sucesso ou falha
     private Boolean success;
 }

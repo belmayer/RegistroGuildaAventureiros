@@ -47,7 +47,7 @@ public class Usuario {
     @Column(name = "ultimo_login_em")
     private OffsetDateTime ultimoLoginEm;
 
-    @Column(name = "created_at", nullable = false) // updatable = false??
+    @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)

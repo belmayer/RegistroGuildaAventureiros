@@ -12,10 +12,10 @@ import java.util.List;
 
 public interface ParticipacaoMissaoRepository extends JpaRepository<ParticipacaoMissao, ParticipacaoMissaoID> {
 
-    // 🔹 EVITAR DUPLICIDADE (forma mais segura)
+    // evita duplicidade
     boolean existsByMissaoIdAndAventureiroId(Long missaoId, Long aventureiroId);
 
-    // 🔥 PARTICIPANTES DA MISSÃO
+    // participantes
     @Query("""
     SELECT p FROM ParticipacaoMissao p
     JOIN FETCH p.aventureiro
@@ -23,7 +23,7 @@ public interface ParticipacaoMissaoRepository extends JpaRepository<Participacao
     """)
     List<ParticipacaoMissao> buscarPorMissao(@Param("missaoId") Long id);
 
-    // 🔥 RANKING
+    // ranking
     @Query("""
     SELECT new com.example.guilda.dto.aventura.RankingDTO(
         p.aventureiro.id,

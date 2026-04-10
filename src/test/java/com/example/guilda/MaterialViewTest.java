@@ -26,7 +26,7 @@ class MaterialViewTest {
         assertNotNull(resultado);
         assertTrue(resultado.size() <= 10);
 
-        // imprime no console (IMPORTANTE PARA O PRINT)
+        // imprime no console
         System.out.println("=== RESULTADO DAS MISSÕES ===");
 
         for (MaterialView missao : resultado) {

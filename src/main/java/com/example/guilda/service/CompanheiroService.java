@@ -15,7 +15,7 @@ public class CompanheiroService {
 
     private final AventureiroRepository aventureiroRepository;
 
-    // ✅ Criar ou substituir
+    // criar ou substituir
     public Companheiro definirOuSubstituir(Long id, Companheiro dados) {
 
         Aventureiro aventureiro = aventureiroRepository.findById(id)
@@ -29,7 +29,7 @@ public class CompanheiroService {
             existente.setEspecie(dados.getEspecie());
             existente.setLealdade(dados.getLealdade());
 
-            // 🔥 GARANTE sincronização
+            //  sincroniza
             existente.setAventureiro(aventureiro);
 
         } else {
@@ -40,10 +40,8 @@ public class CompanheiroService {
             novo.setEspecie(dados.getEspecie());
             novo.setLealdade(dados.getLealdade());
 
-            // 🔥 ESSENCIAL
             novo.setAventureiro(aventureiro);
 
-            // 🔥 ESSENCIAL
             aventureiro.setCompanheiro(novo);
         }
 
@@ -52,7 +50,7 @@ public class CompanheiroService {
         return aventureiro.getCompanheiro();
     }
 
-    // ✅ Remover companheiro
+    // apaga o companheiro
     public void remover(Long aventureiroId) {
 
         Aventureiro aventureiro = aventureiroRepository.findById(aventureiroId)
@@ -63,7 +61,7 @@ public class CompanheiroService {
         aventureiroRepository.save(aventureiro);
     }
 
-    // 🔍 validações de regra de negócio
+    // validações de regra
     private void validar(Companheiro c) {
 
         if (c.getNome() == null || c.getNome().isBlank()) {
@@ -74,7 +72,7 @@ public class CompanheiroService {
             throw new RuntimeException("especie é obrigatória");
         }
 
-        // garante enum válido (segurança extra)
+        // garante enum válido
         try {
             Especie.valueOf(c.getEspecie().name());
         } catch (Exception e) {

@@ -16,14 +16,14 @@ public class CompanheiroController {
 
     private final CompanheiroService service;
 
-    // ✅ Criar ou substituir
+    // criar ou substituir
     @PutMapping
     public ResponseEntity<?> definir(
             @PathVariable Long id,
             @RequestBody CompanheiroDTO dto) {
 
         try {
-            // 🔥 converte DTO → entidade
+            // converte DTO  -> entidade
             Companheiro companheiro = new Companheiro();
             companheiro.setNome(dto.getNome());
 
@@ -38,7 +38,7 @@ public class CompanheiroController {
             // chama service
             Companheiro salvo = service.definirOuSubstituir(id, companheiro);
 
-            // 🔥 converte entidade → DTO (resposta)
+            // converte entidade → DTO resposta
             CompanheiroDTO response = CompanheiroDTO.builder()
                     .nome(salvo.getNome())
                     .especie(salvo.getEspecie())
@@ -54,7 +54,7 @@ public class CompanheiroController {
         }
     }
 
-    // ✅ Remover companheiro
+    // apaga
     @DeleteMapping
     public ResponseEntity<?> remover(@PathVariable Long id) {
 

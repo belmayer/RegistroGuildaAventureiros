@@ -54,7 +54,7 @@ public class MissaoService {
         return repository.save(missao);
     }
 
-    // 🔥 LISTAGEM DINÂMICA CORRETA
+    // listagem
     public Page<Missao> listar(
             StatusMissao status,
             NivelPerigo nivel,
@@ -87,7 +87,6 @@ public class MissaoService {
         }, pageable);
     }
 
-    // 🔥 NOVO: DETALHAR (AGORA CORRETO)
     public MissaoDetalhadaResponse detalhar(Long id) {
 
         Missao missao = repository.findById(id)

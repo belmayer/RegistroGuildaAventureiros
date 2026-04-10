@@ -20,38 +20,35 @@ public class Missao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔗 Organização obrigatória
+    // organizacao
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizacao_id", nullable = false)
     @JsonIgnore
     private Organizacao organizacao;
 
-    // 🔤 Título obrigatório (validado no service)
+    // titulo
     @Column(nullable = false, length = 150)
     private String titulo;
 
-    // ⚠️ Enum obrigatório
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private NivelPerigo nivelPerigo;
 
-    // 📌 Status obrigatório
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusMissao status;
 
-    // 🕒 Data de criação automática
+    // data de criação automática
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    // 🕒 Datas opcionais
     @Column(name = "data_inicio")
     private OffsetDateTime dataInicio;
 
     @Column(name = "data_fim")
     private OffsetDateTime dataFim;
 
-    // 🔥 UM ÚNICO método de ciclo de vida (SEM DUPLICAÇÃO)
+    // tiro ou não tiro??
     @PrePersist
     @PreUpdate
     public void antesDeSalvar() {

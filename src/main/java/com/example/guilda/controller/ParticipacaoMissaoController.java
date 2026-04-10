@@ -5,7 +5,6 @@ import com.example.guilda.domain.aventura.StatusMissao;
 import com.example.guilda.dto.aventura.ParticipacaoResponse;
 import com.example.guilda.dto.aventura.RankingDTO;
 import com.example.guilda.service.ParticipacaoMissaoService;
-import com.example.guilda.repository.aventura.ParticipacaoMissaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;

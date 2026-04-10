@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface AventureiroRepository extends JpaRepository<Aventureiro, Long> {
 
-    // 🔹 FILTROS (status + classe + nível mínimo)
+    // filtros - status + classe + nível mínimo
     Page<Aventureiro> findByAtivoAndClasseAndNivelGreaterThanEqual(
             Boolean ativo,
             ClasseAventureiro classe,
@@ -21,43 +21,43 @@ public interface AventureiroRepository extends JpaRepository<Aventureiro, Long> 
             Pageable pageable
     );
 
-    // 🔹 só ativo
+    // só ativo
     Page<Aventureiro> findByAtivo(Boolean ativo, Pageable pageable);
 
-    // 🔹 só classe
+    // só classe
     Page<Aventureiro> findByClasse(ClasseAventureiro classe, Pageable pageable);
 
-    // 🔹 só nível mínimo
+    // só nível mínimo
     Page<Aventureiro> findByNivelGreaterThanEqual(Integer nivel, Pageable pageable);
 
-    // 🔹 ativo + classe
+    // ativo + classe
     Page<Aventureiro> findByAtivoAndClasse(
             Boolean ativo,
             ClasseAventureiro classe,
             Pageable pageable
     );
 
-    // 🔹 ativo + nível
+    // ativo + nível
     Page<Aventureiro> findByAtivoAndNivelGreaterThanEqual(
             Boolean ativo,
             Integer nivel,
             Pageable pageable
     );
 
-    // 🔹 classe + nível
+    // classe + nível
     Page<Aventureiro> findByClasseAndNivelGreaterThanEqual(
             ClasseAventureiro classe,
             Integer nivel,
             Pageable pageable
     );
 
-    // 🔹 BUSCA POR NOME
+    // busca nome
     Page<Aventureiro> findByNomeContainingIgnoreCase(
             String nome,
             Pageable pageable
     );
 
-    // 🔹 PERFIL COMPLETO (base)
+    // perfil completo
     @Query("""
         SELECT a FROM Aventureiro a
         LEFT JOIN FETCH a.organizacao

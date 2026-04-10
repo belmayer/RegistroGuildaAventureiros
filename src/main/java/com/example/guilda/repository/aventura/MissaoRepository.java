@@ -17,10 +17,10 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface MissaoRepository extends JpaRepository<Missao, Long>,
         JpaSpecificationExecutor<Missao> {
 
-    // 🔹 BUSCAR POR ID (já existe no JpaRepository, mas deixamos explícito)
+    // pra ficar explicito
     Optional<Missao> findById(Long id);
 
-    // 🔥 RELATÓRIO DE MISSÕES (CORRIGIDO)
+    // relatorio missoes
     @Query("""
 SELECT new com.example.guilda.dto.aventura.MissaoRelatorioDTO(
     m.id,

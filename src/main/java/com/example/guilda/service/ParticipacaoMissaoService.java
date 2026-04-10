@@ -24,7 +24,7 @@ public class ParticipacaoMissaoService {
     @Transactional
     public ParticipacaoMissao criar(ParticipacaoMissao participacao) {
 
-        // 🔴 valida entrada básica
+        // valida entrada básica
         if (participacao.getAventureiro() == null || participacao.getAventureiro().getId() == null) {
             throw new IllegalArgumentException("Aventureiro é obrigatório");
         }
@@ -33,7 +33,7 @@ public class ParticipacaoMissaoService {
             throw new IllegalArgumentException("Missão é obrigatória");
         }
 
-        // 🔴 buscar entidades reais
+        // buscar entidades
         var aventureiro = aventureiroRepository.findById(
                 participacao.getAventureiro().getId()
         ).orElseThrow(() -> new IllegalArgumentException("Aventureiro não encontrado"));
@@ -45,7 +45,7 @@ public class ParticipacaoMissaoService {
         participacao.setAventureiro(aventureiro);
         participacao.setMissao(missao);
 
-        // 🔥 CORREÇÃO CRÍTICA: setar ID composto
+        // setar ID composto
         participacao.setId(
                 new ParticipacaoMissaoID(
                         missao.getId(),
@@ -53,50 +53,50 @@ public class ParticipacaoMissaoService {
                 )
         );
 
-        // 🔴 não duplicar participação
+        // não duplicar participação
         if (repository.existsByMissaoIdAndAventureiroId(
                 missao.getId(), aventureiro.getId())) {
 
             throw new IllegalArgumentException("Aventureiro já está nessa missão");
         }
 
-        // 🔴 aventureiro ativo
+        // aventureiro ativo
         if (!Boolean.TRUE.equals(aventureiro.getAtivo())) {
             throw new IllegalArgumentException("Aventureiro inativo não pode participar");
         }
 
-        // 🔴 mesma organização
+        // mesma organização
         if (!missao.getOrganizacao().getId()
                 .equals(aventureiro.getOrganizacao().getId())) {
 
             throw new IllegalArgumentException("Aventureiro e missão devem ser da mesma organização");
         }
 
-        // 🔴 status da missão
+        // status da missão
         if (missao.getStatus() == StatusMissao.CANCELADA ||
             missao.getStatus() == StatusMissao.CONCLUIDA) {
 
             throw new IllegalArgumentException("Missão não aceita participantes");
         }
 
-        // 🔴 papel obrigatório
+        // papel obrigatório
         if (participacao.getPapel() == null || participacao.getPapel().isBlank()) {
             throw new IllegalArgumentException("Papel é obrigatório");
         }
 
-        // 🔴 destaque obrigatório
+        // destaque obrigatório
         if (participacao.getDestaque() == null) {
             throw new IllegalArgumentException("Destaque deve ser informado");
         }
 
-        // 🔴 recompensa válida
+        // recompensa válida
         if (participacao.getRecompensa() != null &&
             participacao.getRecompensa().compareTo(BigDecimal.ZERO) < 0) {
 
             throw new IllegalArgumentException("Recompensa não pode ser negativa");
         }
 
-        // 🔥 agora você controla o timestamp aqui
+        // timestamp
         participacao.setCreatedAt(OffsetDateTime.now());
 
         return repository.save(participacao);

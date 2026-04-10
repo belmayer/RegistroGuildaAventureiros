@@ -16,7 +16,7 @@ public class Companheiro {
     @Column(name = "aventureiro_id")
     private Long id;
 
-    // 🔗 1:1 com aventureiro (compartilha o ID)
+    //  1:1 com aventureiro -- compartilha o ID
     @OneToOne
     @MapsId
     @JoinColumn(name = "aventureiro_id")

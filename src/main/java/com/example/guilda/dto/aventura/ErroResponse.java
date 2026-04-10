@@ -1,8 +1,10 @@
 package com.example.guilda.dto.aventura;
 
+import lombok.Getter;
+
 import java.util.List;
 
-
+@Getter
 public class ErroResponse {
 
     private String mensagem;

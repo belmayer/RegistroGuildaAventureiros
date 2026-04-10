@@ -57,5 +57,4 @@ public class Role {
     @JoinColumn(name = "organizacao_id", nullable = false)
     private Organizacao organizacao;
 
-    // Role ---< role_permissions >--- Permission
 }

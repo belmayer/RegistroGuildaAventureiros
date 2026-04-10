@@ -36,7 +36,7 @@ class UsuarioRepositoryTest {
     @Test
     void deveCarregarUsuarioComRelacionamentos() {
 
-        // 🔹 organização
+        //  organização
         Organizacao org = organizacaoRepository.save(
                 Organizacao.builder()
                         .nome("Guilda Teste")
@@ -45,7 +45,7 @@ class UsuarioRepositoryTest {
                         .build()
         );
 
-        // 🔹 permission
+        // permission
         Permission perm = permissionRepository.save(
                 Permission.builder()
                         .code("CREATE_USER")
@@ -53,7 +53,7 @@ class UsuarioRepositoryTest {
                         .build()
         );
 
-        // 🔹 role
+        // role
         Role role = roleRepository.save(
                 Role.builder()
                         .nome("ADMIN")
@@ -64,7 +64,7 @@ class UsuarioRepositoryTest {
                         .build()
         );
 
-        // 🔹 usuario 1
+        // usuario 1
         Usuario usuario1 = usuarioRepository.save(
                 Usuario.builder()
                         .nome("Isabella")
@@ -78,7 +78,7 @@ class UsuarioRepositoryTest {
                         .build()
         );
 
-        // 🔹 usuario 2 (IMPORTANTE PRA TESTE)
+        // usuario 2
         usuarioRepository.save(
                 Usuario.builder()
                         .nome("Outro")
@@ -92,32 +92,31 @@ class UsuarioRepositoryTest {
                         .build()
         );
 
-        // 🔹 buscar
+        // buscar
         var usuarios = usuarioRepository.findAll();
         Usuario u = usuarios.get(0);
 
-        // 🔥 TESTES (COMPLETOS)
-
-        // ✔ múltiplos usuários
+//testess
+        //  múltiplos usuários
         assertThat(usuarios.size()).isGreaterThan(1);
 
-        // ✔ organização
+        //  organização
         assertThat(u.getOrganizacao()).isNotNull();
         assertThat(u.getOrganizacao().getId()).isEqualTo(org.getId());
 
-        // ✔ roles
+        //  roles
         assertThat(u.getRoles()).isNotEmpty();
         assertThat(u.getRoles().size()).isEqualTo(1);
 
-        // ✔ nome da role
+        //  nome da role
         Role r = u.getRoles().iterator().next();
         assertThat(r.getNome()).isEqualTo("ADMIN");
 
-        // ✔ permissions via role
+        //  permissions via role
         assertThat(r.getPermissions()).isNotEmpty();
         assertThat(r.getPermissions().size()).isEqualTo(1);
 
-        // ✔ testar role direto (IMPORTANTE)
+        // testar role direto
         Role roleSalvo = roleRepository.findAll().get(0);
         assertThat(roleSalvo.getPermissions()).isNotEmpty();
     }

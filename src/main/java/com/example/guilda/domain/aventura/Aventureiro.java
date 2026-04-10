@@ -47,7 +47,7 @@ public class Aventureiro {
     @Column(name = "data_atualizacao")
     private OffsetDateTime updatedAt;
 
-    // 🔥 ESSENCIAL PARA COMPANHEIRO
+    // companheirooo
     @OneToOne(mappedBy = "aventureiro", cascade = CascadeType.ALL, orphanRemoval = true)
     private Companheiro companheiro;
 }

@@ -33,12 +33,12 @@ public class Organizacao {
     // relacionamentos ================
 
 
-    // 🔹 1:N com Usuario
+    // 1:N com Usuario
     @OneToMany(mappedBy = "organizacao", fetch = FetchType.LAZY)
     @JsonManagedReference
     private Set<Usuario> usuarios;
 
-    // 🔹 1:N com Role
+    // 1:N com Role
     @OneToMany(mappedBy = "organizacao", fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Role> roles;

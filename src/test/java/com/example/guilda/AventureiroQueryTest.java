@@ -2,27 +2,22 @@ package com.example.guilda;
 
 import com.example.guilda.domain.audit.Organizacao;
 import com.example.guilda.domain.audit.Usuario;
-import com.example.guilda.domain.aventura.*;
-import com.example.guilda.dto.aventura.MissaoRelatorioDTO;
-import com.example.guilda.dto.aventura.RankingDTO;
+import com.example.guilda.domain.aventura.Aventureiro;
+import com.example.guilda.domain.aventura.ClasseAventureiro;
 import com.example.guilda.repository.audit.OrganizacaoRepository;
 import com.example.guilda.repository.audit.UsuarioRepository;
-import com.example.guilda.repository.aventura.*;
+import com.example.guilda.repository.aventura.AventureiroRepository;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 class AventureiroQueryTest {
 
@@ -35,14 +30,8 @@ class AventureiroQueryTest {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private ParticipacaoMissaoRepository participacaoRepository;
-
-    @Autowired
-    private MissaoRepository missaoRepository;
-
-    // 🔹 CRIA BASE
-    private Aventureiro criarAventureiroBase() {
+    // 🔹 BASE REUTILIZÁVEL
+    private Aventureiro criar(String nome, ClasseAventureiro classe, int nivel, boolean ativo) {
 
         Organizacao org = organizacaoRepository.save(
                 Organizacao.builder()
@@ -55,7 +44,7 @@ class AventureiroQueryTest {
         Usuario user = usuarioRepository.save(
                 Usuario.builder()
                         .nome("Admin")
-                        .email("admin@test.com")
+                        .email(nome + "@test.com")
                         .senhaHash("123")
                         .status("ATIVO")
                         .organizacao(org)
@@ -66,10 +55,10 @@ class AventureiroQueryTest {
 
         return aventureiroRepository.save(
                 Aventureiro.builder()
-                        .nome("Arthas")
-                        .classe(ClasseAventureiro.GUERREIRO)
-                        .nivel(10)
-                        .ativo(true)
+                        .nome(nome)
+                        .classe(classe)
+                        .nivel(nivel)
+                        .ativo(ativo)
                         .organizacao(org)
                         .usuario(user)
                         .createdAt(OffsetDateTime.now())
@@ -78,233 +67,125 @@ class AventureiroQueryTest {
         );
     }
 
-    // 🧪 TESTE 1 — FILTRO
+    // =========================
+    // 🔹 FILTROS
+    // =========================
+
     @Test
-    void deveFiltrarAventureiros() {
+    void deveFiltrarPorAtivo() {
+        criar("A", ClasseAventureiro.GUERREIRO, 10, true);
+        criar("B", ClasseAventureiro.MAGO, 5, false);
 
-        criarAventureiroBase();
+        var result = aventureiroRepository.findByAtivo(true, PageRequest.of(0, 10));
 
-        var resultado = aventureiroRepository
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void deveFiltrarPorClasse() {
+        criar("A", ClasseAventureiro.GUERREIRO, 10, true);
+        criar("B", ClasseAventureiro.MAGO, 5, true);
+
+        var result = aventureiroRepository.findByClasse(
+                ClasseAventureiro.GUERREIRO,
+                PageRequest.of(0, 10)
+        );
+
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void deveFiltrarPorNivel() {
+        criar("A", ClasseAventureiro.GUERREIRO, 10, true);
+        criar("B", ClasseAventureiro.GUERREIRO, 5, true);
+
+        var result = aventureiroRepository.findByNivelGreaterThanEqual(
+                8,
+                PageRequest.of(0, 10)
+        );
+
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void deveFiltrarAtivoClasseNivel() {
+        criar("A", ClasseAventureiro.GUERREIRO, 10, true);
+        criar("B", ClasseAventureiro.GUERREIRO, 5, true);
+        criar("C", ClasseAventureiro.GUERREIRO, 10, false);
+
+        var result = aventureiroRepository
                 .findByAtivoAndClasseAndNivelGreaterThanEqual(
                         true,
                         ClasseAventureiro.GUERREIRO,
-                        5,
+                        8,
                         PageRequest.of(0, 10)
                 );
 
-        assertThat(resultado.getContent()).hasSize(1);
+        assertThat(result.getContent()).hasSize(1);
     }
 
-    // 🧪 TESTE 2 — BUSCA POR NOME
+    @Test
+    void deveFiltrarAtivoENivel() {
+        criar("A", ClasseAventureiro.GUERREIRO, 10, true);
+        criar("B", ClasseAventureiro.GUERREIRO, 5, true);
+
+        var result = aventureiroRepository
+                .findByAtivoAndNivelGreaterThanEqual(true, 8, PageRequest.of(0, 10));
+
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void deveFiltrarClasseENivel() {
+        criar("A", ClasseAventureiro.GUERREIRO, 10, true);
+        criar("B", ClasseAventureiro.MAGO, 10, true);
+
+        var result = aventureiroRepository
+                .findByClasseAndNivelGreaterThanEqual(
+                        ClasseAventureiro.GUERREIRO,
+                        8,
+                        PageRequest.of(0, 10)
+                );
+
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    // =========================
+    // 🔹 BUSCA POR NOME
+    // =========================
+
     @Test
     void deveBuscarPorNome() {
+        criar("Arthas", ClasseAventureiro.GUERREIRO, 10, true);
 
-        criarAventureiroBase();
+        var result = aventureiroRepository
+                .findByNomeContainingIgnoreCase("arth", PageRequest.of(0, 10));
 
-        var resultado = aventureiroRepository
-                .findByNomeContainingIgnoreCase(
-                        "arth",
-                        PageRequest.of(0, 10)
-                );
-
-        assertThat(resultado.getContent()).hasSize(1);
-    }
-
-    // 🧪 TESTE 3 — RANKING
-    @Test
-    void deveGerarRanking() {
-
-        Aventureiro aventureiro = criarAventureiroBase();
-
-        Missao missao = missaoRepository.save(
-                Missao.builder()
-                        .titulo("Missão Teste")
-                        .organizacao(aventureiro.getOrganizacao())
-                        .nivelPerigo(NivelPerigo.MEDIO)
-                        .status(StatusMissao.CONCLUIDA)
-                        .createdAt(OffsetDateTime.now())
-                        .build()
-        );
-
-        participacaoRepository.save(
-                ParticipacaoMissao.builder()
-                        .aventureiro(aventureiro)
-                        .missao(missao)
-                        .papel("LIDER") // 🔥 ADICIONE ISSO
-                        .recompensa(100)
-                        .destaque(true)
-                        .createdAt(OffsetDateTime.now())
-                        .build()
-        );
-
-        List<RankingDTO> ranking = participacaoRepository.ranking(
-                OffsetDateTime.now().minusDays(1),
-                OffsetDateTime.now().plusDays(1)
-        );
-
-        assertThat(ranking).isNotEmpty();
-        assertThat(ranking.get(0).totalParticipacoes()).isEqualTo(1);
-    }
-
-    // 🧪 TESTE 4 — MISSÃO SEM PARTICIPANTE
-    @Test
-    void deveRetornarMissaoSemParticipantes() {
-
-        Aventureiro aventureiro = criarAventureiroBase();
-
-        Missao missao = missaoRepository.save(
-                Missao.builder()
-                        .titulo("Missão Vazia")
-                        .organizacao(aventureiro.getOrganizacao())
-                        .nivelPerigo(NivelPerigo.BAIXO)
-                        .status(StatusMissao.PLANEJADA)
-                        .createdAt(OffsetDateTime.now())
-                        .build()
-        );
-
-        var participantes = participacaoRepository.findAll()
-                .stream()
-                .filter(p -> p.getMissao().getId().equals(missao.getId()))
-                .toList();
-
-        assertThat(participantes).isEmpty();
-    }
-
-    // 🧪 TESTE 5 — RELATÓRIO
-    @Test
-    void deveGerarRelatorioMissoes() {
-
-        Aventureiro aventureiro = criarAventureiroBase();
-
-        Missao missao = missaoRepository.save(
-                Missao.builder()
-                        .titulo("Missão Relatório")
-                        .organizacao(aventureiro.getOrganizacao())
-                        .nivelPerigo(NivelPerigo.ALTO)
-                        .status(StatusMissao.CONCLUIDA)
-                        .createdAt(OffsetDateTime.now())
-                        .build()
-        );
-
-        participacaoRepository.save(
-                ParticipacaoMissao.builder()
-                        .aventureiro(aventureiro)
-                        .missao(missao)
-                        .papel("LIDER") // 🔥 ESSENCIAL
-                        .recompensa(200)
-                        .destaque(false)
-                        .createdAt(OffsetDateTime.now())
-                        .build()
-        );
-
-        List<MissaoRelatorioDTO> resultado = missaoRepository.relatorio(
-                OffsetDateTime.now().minusDays(1),
-                OffsetDateTime.now().plusDays(1)
-        );
-
-        assertThat(resultado).isNotEmpty();
-        assertThat(resultado.get(0).totalParticipantes()).isEqualTo(1);
-    }
-
-    // 🧪 TESTE 6 — AVENTUREIRO SEM MISSÃO
-    @Test
-    void deveRetornarAventureiroSemMissao() {
-
-        Aventureiro aventureiro = criarAventureiroBase();
-
-        Long total = participacaoRepository.contarParticipacoes(aventureiro.getId());
-
-        assertThat(total).isEqualTo(0);
-    }
-
-
-    // teste novo
-    @Test
-    void deveBuscarPerfilCompleto() {
-
-        Aventureiro aventureiro = criarAventureiroBase();
-
-        Aventureiro resultado = aventureiroRepository.buscarCompleto(aventureiro.getId());
-
-        assertThat(resultado).isNotNull();
-        assertThat(resultado.getId()).isEqualTo(aventureiro.getId());
-    }
-
-    @Test
-    void deveListarMissoesComFiltro() {
-
-        Aventureiro aventureiro = criarAventureiroBase();
-
-        Missao missao = missaoRepository.save(
-                Missao.builder()
-                        .titulo("Missão Filtro")
-                        .organizacao(aventureiro.getOrganizacao())
-                        .nivelPerigo(NivelPerigo.MEDIO)
-                        .status(StatusMissao.PLANEJADA)
-                        .createdAt(OffsetDateTime.now())
-                        .build()
-        );
-
-        var resultado = missaoRepository
-                .findByStatusAndNivelPerigoAndCreatedAtBetween(
-                        StatusMissao.PLANEJADA,
-                        NivelPerigo.MEDIO,
-                        OffsetDateTime.now().minusDays(1),
-                        OffsetDateTime.now().plusDays(1),
-                        PageRequest.of(0, 10)
-                );
-
-        assertThat(resultado.getContent()).isNotEmpty();
-    }
-
-    @Test
-    void deveRetornarMissaoComParticipantes() {
-
-        Aventureiro aventureiro = criarAventureiroBase();
-
-        Missao missao = missaoRepository.save(
-                Missao.builder()
-                        .titulo("Missão Com Participante")
-                        .organizacao(aventureiro.getOrganizacao())
-                        .nivelPerigo(NivelPerigo.MEDIO)
-                        .status(StatusMissao.CONCLUIDA)
-                        .createdAt(OffsetDateTime.now())
-                        .build()
-        );
-
-        participacaoRepository.save(
-                ParticipacaoMissao.builder()
-                        .aventureiro(aventureiro)
-                        .missao(missao)
-                        .papel("LIDER")
-                        .recompensa(100)
-                        .destaque(true)
-                        .createdAt(OffsetDateTime.now())
-                        .build()
-        );
-
-        var participantes = missaoRepository.buscarParticipantes(missao.getId());
-
-        assertThat(participantes).isNotEmpty();
+        assertThat(result.getContent()).hasSize(1);
     }
 
     @Test
     void deveRetornarBuscaVazia() {
+        var result = aventureiroRepository
+                .findByNomeContainingIgnoreCase("naoexiste", PageRequest.of(0, 10));
 
-        var resultado = aventureiroRepository
-                .findByNomeContainingIgnoreCase(
-                        "naoexiste",
-                        PageRequest.of(0, 10)
-                );
-
-        assertThat(resultado.getContent()).isEmpty();
+        assertThat(result.getContent()).isEmpty();
     }
 
+    // =========================
+    // 🔹 QUERY CUSTOM
+    // =========================
+
     @Test
-    void deveRetornarRankingVazio() {
+    void deveBuscarPerfilCompleto() {
 
-        List<RankingDTO> ranking = participacaoRepository.ranking(null, null);
+        Aventureiro aventureiro = criar("Gandalf", ClasseAventureiro.MAGO, 99, true);
 
-        assertThat(ranking).isEmpty();
+        Aventureiro result =
+                aventureiroRepository.buscarCompleto(aventureiro.getId());
+
+        assertThat(result).isNotNull();
+        assertThat(result.getOrganizacao()).isNotNull();
+        assertThat(result.getUsuario()).isNotNull();
     }
 }

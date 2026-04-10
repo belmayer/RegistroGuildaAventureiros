@@ -25,7 +25,7 @@ public class ApiKey {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔗 ORGANIZACAO
+    // organizacao
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizacao_id", nullable = false)
     private Organizacao organizacao;
@@ -33,7 +33,7 @@ public class ApiKey {
     @Column(nullable = false)
     private String nome;
 
-    // 🔐 HASH da chave (nunca guardar a chave pura!)
+    // hash da chave
     @Column(name = "key_hash", nullable = false)
     private String keyHash;
 

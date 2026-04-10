@@ -44,7 +44,7 @@ public class AventureiroService {
             throw new RuntimeException("Aventureiro precisa de usuário");
         }
 
-        // 🔥 REGRA IMPORTANTE
+        // padrao é ativo
         aventureiro.setAtivo(true);
 
         // timestamps

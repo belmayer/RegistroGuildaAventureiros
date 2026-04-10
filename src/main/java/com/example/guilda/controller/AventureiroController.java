@@ -24,7 +24,7 @@ public class AventureiroController {
         return service.buscarDTO(id);
     }
 
-    // 🔹 Listar com filtros + paginação + headers
+    //  filtros + paginação + headers
     @GetMapping
     public ResponseEntity<Page<AventureiroDTO>> listar(
             @RequestParam(required = false) Boolean ativo,
@@ -50,7 +50,7 @@ public class AventureiroController {
 
         Page<AventureiroDTO> pageResult = service.listar(ativo, classe, nivelMin, page, size);
 
-        // ✅ headers obrigatórios
+        // headers
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-Total-Count", String.valueOf(pageResult.getTotalElements()));
         headers.add("X-Page", String.valueOf(pageResult.getNumber()));
@@ -72,14 +72,14 @@ public class AventureiroController {
         service.reativar(id);
     }
 
-    // 🔹 Criar aventureiro
+    // criar aventureiros
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Aventureiro criar(@RequestBody Aventureiro aventureiro) {
         return service.criar(aventureiro);
     }
 
-    // 🔹 Atualizar aventureiro
+    // atualizar
     @PutMapping("/{id}")
     public AventureiroDTO atualizar(@PathVariable Long id,
                                     @RequestBody Aventureiro aventureiro) {

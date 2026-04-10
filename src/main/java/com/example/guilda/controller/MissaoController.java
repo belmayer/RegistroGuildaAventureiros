@@ -7,8 +7,6 @@ import com.example.guilda.domain.aventura.ParticipacaoMissao;
 import com.example.guilda.dto.aventura.MissaoDetalhadaResponse;
 import com.example.guilda.dto.aventura.MissaoRelatorioDTO;
 import com.example.guilda.service.MissaoService;
-import com.example.guilda.repository.aventura.MissaoRepository;
-import com.example.guilda.repository.aventura.ParticipacaoMissaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,7 +45,7 @@ public class MissaoController {
         return service.detalhar(id);
     }
 
-    // 🔥 RELATÓRIO
+    // relatorio
     @GetMapping("/relatorio")
     public List<MissaoRelatorioDTO> relatorio(
             @RequestParam(required = false) OffsetDateTime inicio,

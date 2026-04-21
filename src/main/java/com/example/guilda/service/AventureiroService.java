@@ -2,7 +2,10 @@ package com.example.guilda.service;
 
 import com.example.guilda.domain.aventura.Aventureiro;
 import com.example.guilda.domain.aventura.ClasseAventureiro;
+import com.example.guilda.dto.aventura.AventureiroRequestDTO;
 import com.example.guilda.dto.aventura.CompanheiroDTO;
+import com.example.guilda.repository.audit.OrganizacaoRepository;
+import com.example.guilda.repository.audit.UsuarioRepository;
 import com.example.guilda.repository.aventura.AventureiroRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,51 +24,54 @@ import java.time.OffsetDateTime;
 public class AventureiroService {
 
     private final AventureiroRepository repository;
+    private final OrganizacaoRepository organizacaoRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public Aventureiro criar(Aventureiro aventureiro) {
+    public AventureiroDTO criar(AventureiroRequestDTO dto) {
 
-        if (aventureiro.getNivel() < 1) {
-            throw new RuntimeException("Nível deve ser >= 1");
-        }
+        Aventureiro a = new Aventureiro();
 
-        if (aventureiro.getNome() == null || aventureiro.getNome().isBlank()) {
-            throw new RuntimeException("Nome obrigatório");
-        }
+        // dados vindos do cliente
+        a.setNome(dto.getNome());
+        a.setClasse(dto.getClasse());
+        a.setNivel(dto.getNivel());
 
-        if (aventureiro.getClasse() == null) {
-            throw new RuntimeException("Classe obrigatória");
-        }
 
-        if (aventureiro.getOrganizacao() == null) {
-            throw new RuntimeException("Aventureiro precisa de organização");
-        }
+        a.setOrganizacao(
+                organizacaoRepository.findById(1L)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND, "Organização não encontrada"
+                        ))
+        );
 
-        if (aventureiro.getUsuario() == null) {
-            throw new RuntimeException("Aventureiro precisa de usuário");
-        }
 
-        // padrao é ativo
-        aventureiro.setAtivo(true);
+        a.setUsuario(
+                usuarioRepository.findById(1L)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND, "Usuário não encontrado"
+                        ))
+        );
 
-        // timestamps
-        aventureiro.setCreatedAt(OffsetDateTime.now());
-        aventureiro.setUpdatedAt(OffsetDateTime.now());
+        // regras do sistema
+        a.setAtivo(true);
+        a.setCreatedAt(OffsetDateTime.now());
+        a.setUpdatedAt(OffsetDateTime.now());
 
-        return repository.save(aventureiro);
+        return toDTO(repository.save(a));
     }
 
-    public Aventureiro atualizar(Long id, Aventureiro dados) {
+    public AventureiroDTO atualizar(Long id, AventureiroRequestDTO dto) {
 
         Aventureiro existente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Aventureiro não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Aventureiro não encontrado"));
 
-        existente.setNome(dados.getNome());
-        existente.setClasse(dados.getClasse());
-        existente.setNivel(dados.getNivel());
-
+        existente.setNome(dto.getNome());
+        existente.setClasse(dto.getClasse());
+        existente.setNivel(dto.getNivel());
         existente.setUpdatedAt(OffsetDateTime.now());
 
-        return repository.save(existente);
+        return toDTO(repository.save(existente));
     }
 
     public Aventureiro buscarPorId(Long id) {
@@ -107,7 +113,7 @@ public class AventureiroService {
                 .nivel(a.getNivel())
                 .ativo(a.getAtivo())
                 .organizacaoNome(a.getOrganizacao().getNome())
-                .companheiro(companheiroDTO) // 🔥 AQUI
+                .companheiro(companheiroDTO)
                 .build();
     }
 

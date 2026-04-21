@@ -3,7 +3,9 @@ package com.example.guilda.controller;
 import com.example.guilda.domain.aventura.Aventureiro;
 import com.example.guilda.domain.aventura.ClasseAventureiro;
 import com.example.guilda.dto.aventura.AventureiroDTO;
+import com.example.guilda.dto.aventura.AventureiroRequestDTO;
 import com.example.guilda.service.AventureiroService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -73,16 +75,18 @@ public class AventureiroController {
     }
 
     // criar aventureiros
+    // alterado para consumir o dto e não a entidade
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Aventureiro criar(@RequestBody Aventureiro aventureiro) {
-        return service.criar(aventureiro);
+    public AventureiroDTO criar(@RequestBody @Valid AventureiroRequestDTO dto) {
+        return service.criar(dto);
     }
 
     // atualizar
+    // também alterado para fazer o mesmo
     @PutMapping("/{id}")
     public AventureiroDTO atualizar(@PathVariable Long id,
-                                    @RequestBody Aventureiro aventureiro) {
-        return service.atualizarDTO(id, aventureiro);
+                                    @RequestBody @Valid AventureiroRequestDTO dto) {
+        return service.atualizar(id, dto);
     }
 }

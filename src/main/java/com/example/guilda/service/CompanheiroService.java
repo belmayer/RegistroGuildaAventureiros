@@ -2,11 +2,14 @@ package com.example.guilda.service;
 
 import com.example.guilda.domain.aventura.Aventureiro;
 import com.example.guilda.domain.aventura.Companheiro;
-import com.example.guilda.domain.aventura.Especie;
+import com.example.guilda.dto.aventura.CompanheiroDTO;
+import com.example.guilda.dto.aventura.CompanheiroRequestDTO;
 import com.example.guilda.repository.aventura.AventureiroRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -16,71 +19,55 @@ public class CompanheiroService {
     private final AventureiroRepository aventureiroRepository;
 
     // criar ou substituir
-    public Companheiro definirOuSubstituir(Long id, Companheiro dados) {
+    public CompanheiroDTO definirOuSubstituir(Long id, CompanheiroRequestDTO dto) {
 
         Aventureiro aventureiro = aventureiroRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Aventureiro não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Aventureiro não encontrado"
+                ));
 
+        Companheiro companheiro;
+
+        // se já existe → atualiza
         if (aventureiro.getCompanheiro() != null) {
-
-            Companheiro existente = aventureiro.getCompanheiro();
-
-            existente.setNome(dados.getNome());
-            existente.setEspecie(dados.getEspecie());
-            existente.setLealdade(dados.getLealdade());
-
-            //  sincroniza
-            existente.setAventureiro(aventureiro);
+            companheiro = aventureiro.getCompanheiro();
 
         } else {
-
-            Companheiro novo = new Companheiro();
-
-            novo.setNome(dados.getNome());
-            novo.setEspecie(dados.getEspecie());
-            novo.setLealdade(dados.getLealdade());
-
-            novo.setAventureiro(aventureiro);
-
-            aventureiro.setCompanheiro(novo);
+            // se não existe → cria novo
+            companheiro = new Companheiro();
+            companheiro.setAventureiro(aventureiro);
+            aventureiro.setCompanheiro(companheiro);
         }
+
+        // aplica dados do DTO
+        companheiro.setNome(dto.getNome());
+        companheiro.setEspecie(dto.getEspecie());
+        companheiro.setLealdade(dto.getLealdade());
 
         aventureiroRepository.save(aventureiro);
 
-        return aventureiro.getCompanheiro();
+        return toDTO(companheiro);
     }
 
-    // apaga o companheiro
+    // remover companheiro
     public void remover(Long aventureiroId) {
 
         Aventureiro aventureiro = aventureiroRepository.findById(aventureiroId)
-                .orElseThrow(() -> new RuntimeException("Aventureiro não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Aventureiro não encontrado"
+                ));
 
         aventureiro.setCompanheiro(null);
 
         aventureiroRepository.save(aventureiro);
     }
 
-    // validações de regra
-    private void validar(Companheiro c) {
-
-        if (c.getNome() == null || c.getNome().isBlank()) {
-            throw new RuntimeException("nome é obrigatório");
-        }
-
-        if (c.getEspecie() == null) {
-            throw new RuntimeException("especie é obrigatória");
-        }
-
-        // garante enum válido
-        try {
-            Especie.valueOf(c.getEspecie().name());
-        } catch (Exception e) {
-            throw new RuntimeException("especie inválida");
-        }
-
-        if (c.getLealdade() == null || c.getLealdade() < 0 || c.getLealdade() > 100) {
-            throw new RuntimeException("lealdade deve estar entre 0 e 100");
-        }
+    // conversão
+    private CompanheiroDTO toDTO(Companheiro c) {
+        return CompanheiroDTO.builder()
+                .nome(c.getNome())
+                .especie(c.getEspecie())
+                .lealdade(c.getLealdade())
+                .build();
     }
 }

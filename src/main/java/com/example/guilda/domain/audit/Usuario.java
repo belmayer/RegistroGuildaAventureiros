@@ -23,7 +23,12 @@ import java.util.Set;
 public class Usuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usuario_seq")
+    @SequenceGenerator(
+            name = "usuario_seq",
+            sequenceName = "audit.usuarios_id_seq",
+            allocationSize = 1
+    )
     private Long id;
 
     @Column(nullable = false) // adicionar length = 120 ??

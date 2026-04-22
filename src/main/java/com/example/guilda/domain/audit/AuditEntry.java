@@ -16,7 +16,12 @@ import java.time.OffsetDateTime;
 public class AuditEntry {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "audit_entry_seq")
+    @SequenceGenerator(
+            name = "audit_entry_seq",
+            sequenceName = "audit.audit_entries_id_seq",
+            allocationSize = 1
+    )
     private Long id;
 
     // organizacao

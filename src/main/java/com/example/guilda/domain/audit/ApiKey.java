@@ -22,7 +22,12 @@ import java.time.OffsetDateTime;
 public class ApiKey {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "api_key_seq")
+    @SequenceGenerator(
+            name = "api_key_seq",
+            sequenceName = "audit.api_keys_id_seq",
+            allocationSize = 1
+    )
     private Long id;
 
     // organizacao

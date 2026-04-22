@@ -22,7 +22,12 @@ import java.util.Set;
 public class Permission {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "permission_seq")
+    @SequenceGenerator(
+            name = "permission_seq",
+            sequenceName = "audit.permissions_id_seq",
+            allocationSize = 1
+    )
     private Long id;
 
     @Column(nullable = false, unique = true)

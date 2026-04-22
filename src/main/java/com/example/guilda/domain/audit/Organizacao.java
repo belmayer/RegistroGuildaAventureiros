@@ -18,7 +18,12 @@ import java.util.Set;
 public class Organizacao {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "organizacao_seq")
+    @SequenceGenerator(
+            name = "organizacao_seq",
+            sequenceName = "audit.organizacoes_id_seq",
+            allocationSize = 1
+    )
     private Long id;
 
     @Column(nullable = false, unique = true)

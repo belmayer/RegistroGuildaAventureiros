@@ -16,37 +16,31 @@ public class ProdutoController {
 
     private final ProdutoService service;
 
-    // 🔎 já existia
     @GetMapping("/buscar")
     public List<ProdutoDTO> buscar(@RequestParam String termo) throws IOException {
         return service.buscar(termo);
     }
 
-    // 🔎 1. nome
     @GetMapping("/busca/nome")
     public List<ProdutoDTO> nome(@RequestParam String termo) throws IOException {
         return service.buscarPorNome(termo);
     }
 
-    // 🔎 2. descrição
     @GetMapping("/busca/descricao")
     public List<ProdutoDTO> descricao(@RequestParam String termo) throws IOException {
         return service.buscarPorDescricao(termo);
     }
 
-    // 🔎 3. frase
     @GetMapping("/busca/frase")
     public List<ProdutoDTO> frase(@RequestParam String termo) throws IOException {
         return service.buscarFrase(termo);
     }
 
-    // 🔎 4. fuzzy
     @GetMapping("/busca/fuzzy")
     public List<ProdutoDTO> fuzzy(@RequestParam String termo) throws IOException {
         return service.buscarFuzzy(termo);
     }
 
-    // 🔎 5. multicampos
     @GetMapping("/busca/multicampos")
     public List<ProdutoDTO> multi(@RequestParam String termo) throws IOException {
         return service.buscarMultiCampos(termo);

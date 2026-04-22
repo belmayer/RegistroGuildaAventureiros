@@ -41,7 +41,7 @@ public class ProdutoService {
         return extrair(response);
     }
 
-    // 🔎 1. Busca por nome
+    // busca por nome
     public List<ProdutoDTO> buscarPorNome(String termo) throws IOException {
         var response = client.search(s -> s
                         .index("guilda_loja")
@@ -55,7 +55,7 @@ public class ProdutoService {
         return extrair(response);
     }
 
-    // 🔎 2. Busca por descrição
+    // busca por descrição
     public List<ProdutoDTO> buscarPorDescricao(String termo) throws IOException {
         var response = client.search(s -> s
                         .index("guilda_loja")
@@ -69,7 +69,7 @@ public class ProdutoService {
         return extrair(response);
     }
 
-    // 🔎 3. Frase exata
+    // frase exata
     public List<ProdutoDTO> buscarFrase(String termo) throws IOException {
         var response = client.search(s -> s
                         .index("guilda_loja")
@@ -83,7 +83,7 @@ public class ProdutoService {
         return extrair(response);
     }
 
-    // 🔎 4. Fuzzy
+    // fuzzy
     public List<ProdutoDTO> buscarFuzzy(String termo) throws IOException {
         var response = client.search(s -> s
                         .index("guilda_loja")
@@ -98,7 +98,7 @@ public class ProdutoService {
         return extrair(response);
     }
 
-    // 🔎 5. Multicampos (igual ao que você já tinha, mas separado)
+    // multicampos
     public List<ProdutoDTO> buscarMultiCampos(String termo) throws IOException {
         return buscar(termo);
     }

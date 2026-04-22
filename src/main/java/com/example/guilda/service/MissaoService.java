@@ -1,11 +1,10 @@
 package com.example.guilda.service;
 
-import com.example.guilda.domain.aventura.Missao;
-import com.example.guilda.domain.aventura.NivelPerigo;
-import com.example.guilda.domain.aventura.ParticipacaoMissao;
-import com.example.guilda.domain.aventura.StatusMissao;
+import com.example.guilda.domain.aventura.*;
 import com.example.guilda.dto.aventura.MissaoDetalhadaResponse;
 import com.example.guilda.dto.aventura.MissaoRelatorioDTO;
+import com.example.guilda.dto.aventura.MissaoRequestDTO;
+import com.example.guilda.repository.audit.OrganizacaoRepository;
 import com.example.guilda.repository.aventura.MissaoRepository;
 import com.example.guilda.repository.aventura.ParticipacaoMissaoRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,38 +22,48 @@ public class MissaoService {
 
     private final MissaoRepository repository;
     private final ParticipacaoMissaoRepository participacaoRepository;
+    private final OrganizacaoRepository organizacaoRepository;
+    public MissaoDetalhadaResponse criar(MissaoRequestDTO dto) {
 
-    public Missao criar(Missao missao) {
+        Missao m = new Missao();
 
-        if (missao.getOrganizacao() == null) {
-            throw new IllegalArgumentException("Missão precisa de organização");
+        m.setTitulo(dto.getTitulo());
+        m.setNivelPerigo(dto.getNivelPerigo());
+        m.setDataInicio(dto.getDataInicio());
+        m.setDataFim(dto.getDataFim());
+
+        if (dto.getDataInicio() != null && dto.getDataFim() != null &&
+                dto.getDataFim().isBefore(dto.getDataInicio())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Data fim não pode ser antes da data início"
+            );
         }
 
-        if (missao.getTitulo() == null || missao.getTitulo().isBlank()) {
-            throw new IllegalArgumentException("Título é obrigatório");
+        if (dto.getTitulo().length() > 150) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Título deve ter no máximo 150 caracteres"
+            );
         }
 
-        if (missao.getTitulo().length() > 150) {
-            throw new IllegalArgumentException("Título deve ter no máximo 150 caracteres");
-        }
+        m.setStatus(StatusMissao.PLANEJADA);
+        m.setCreatedAt(OffsetDateTime.now());
+        m.setOrganizacao(
+                organizacaoRepository.findById(1L)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND, "Organização não encontrada"
+                        ))
+        );
 
-        if (missao.getNivelPerigo() == null) {
-            throw new IllegalArgumentException("Nível de perigo é obrigatório");
-        }
+        Missao salva = repository.save(m);
 
-        if (missao.getStatus() == null) {
-            missao.setStatus(StatusMissao.PLANEJADA);
-        }
+        List<ParticipacaoMissao> participantes =
+                participacaoRepository.buscarPorMissao(salva.getId());
 
-        if (missao.getDataInicio() != null && missao.getDataFim() != null &&
-                missao.getDataFim().isBefore(missao.getDataInicio())) {
-            throw new IllegalArgumentException("Data fim não pode ser antes da data início");
-        }
-
-        return repository.save(missao);
+        return new MissaoDetalhadaResponse(salva, participantes);
     }
 
-    // listagem
     public Page<Missao> listar(
             StatusMissao status,
             NivelPerigo nivel,
@@ -76,11 +85,11 @@ public class MissaoService {
             }
 
             if (inicio != null) {
-                predicates = cb.and(predicates, cb.greaterThanOrEqualTo(root.get("data_criacao"), inicio));
+                predicates = cb.and(predicates, cb.greaterThanOrEqualTo(root.get("createdAt"), inicio));
             }
 
             if (fim != null) {
-                predicates = cb.and(predicates, cb.lessThanOrEqualTo(root.get("data_criacao"), fim));
+                predicates = cb.and(predicates, cb.lessThanOrEqualTo(root.get("createdAt"), fim));
             }
 
             return predicates;

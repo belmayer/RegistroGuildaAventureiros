@@ -48,24 +48,4 @@ public class Missao {
     @Column(name = "data_fim")
     private OffsetDateTime dataFim;
 
-    // tiro ou não tiro??
-    @PrePersist
-    @PreUpdate
-    public void antesDeSalvar() {
-
-        // createdAt só na criação
-        if (this.createdAt == null) {
-            this.createdAt = OffsetDateTime.now();
-        }
-
-        // status padrão
-        if (this.status == null) {
-            this.status = StatusMissao.PLANEJADA;
-        }
-
-        // validação de datas
-        if (dataInicio != null && dataFim != null && dataFim.isBefore(dataInicio)) {
-            throw new IllegalStateException("Data fim não pode ser antes da data início");
-        }
-    }
 }

@@ -6,7 +6,9 @@ import com.example.guilda.domain.aventura.StatusMissao;
 import com.example.guilda.domain.aventura.ParticipacaoMissao;
 import com.example.guilda.dto.aventura.MissaoDetalhadaResponse;
 import com.example.guilda.dto.aventura.MissaoRelatorioDTO;
+import com.example.guilda.dto.aventura.MissaoRequestDTO;
 import com.example.guilda.service.MissaoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +26,8 @@ public class MissaoController {
 
     // criar missão
     @PostMapping
-    public Missao criar(@RequestBody Missao missao) {
-        return service.criar(missao);
+    public MissaoDetalhadaResponse criar(@RequestBody @Valid MissaoRequestDTO dto) {
+        return service.criar(dto);
     }
 
     //
